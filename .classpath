@@ -2,5 +2,10 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/jetty/lib/jetty-server-9.4.6.v20170531.jar"/>
+	<classpathentry kind="lib" path="lib/jetty/lib/jetty-servlet-9.4.6.v20170531.jar"/>
+	<classpathentry kind="lib" path="lib/jersey/lib/jersey-container-servlet-core.jar"/>
+	<classpathentry kind="lib" path="lib/jetty/lib/servlet-api-3.1.jar"/>
+	<classpathentry kind="lib" path="lib/jetty/lib/jetty-util-9.4.6.v20170531.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
