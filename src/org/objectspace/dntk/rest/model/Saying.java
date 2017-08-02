@@ -20,11 +20,21 @@
  * Contributors:
  *     info-age GmbH, Basel - initial implementation
  *******************************************************************************/
-/**
- * 
- */
-/**
- * @author juergen.enge
- *
- */
-package org.objectspace.dntk;
+
+package org.objectspace.dntk.rest.model;
+
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
+public class Saying {
+	
+	public String name;
+	
+	public Saying() {
+		
+	}
+	
+	public Saying(String name) {
+		this.name = name;
+	}
+}

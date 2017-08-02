@@ -27,4 +27,4 @@
  * @author juergen.enge
  *
  */
-package org.objectspace.dntk;
+package org.objectspace.dntk.rest.model;
