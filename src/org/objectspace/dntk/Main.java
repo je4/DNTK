@@ -1,6 +1,64 @@
 /*******************************************************************************
- * Copyright (c) 2017 Juergen Enge.
+ * This file is part of DNTK - The Digital Narration ToolKit.
  *
+ *     DNTK - Digital Narration ToolKit is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     DNTK - Digital Narration ToolKit is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with DNTK - Digital Narration ToolKit.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Contributors:
+ *     info-age GmbH, Basel - initial implementation
+ *******************************************************************************/
+/*******************************************************************************
+ * This file is part of DNTK - The Digital Narration ToolKit.
+ *
+ *     DNTK - Digital Narration ToolKit is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     DNTK - Digital Narration ToolKit is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with DNTK - Digital Narration ToolKit.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Contributors:
+ *     info-age GmbH, Basel - initial implementation
+ *******************************************************************************/
+/*******************************************************************************
+ * This file is part of DNTK - The Digital Narration ToolKit.
+ *
+ *     DNTK - Digital Narration ToolKit is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     DNTK - Digital Narration ToolKit is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with DNTK - Digital Narration ToolKit.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Contributors:
+ *     info-age GmbH, Basel - initial implementation
+ *******************************************************************************/
+/*******************************************************************************
  * This file is part of DNTK - Digital Narration ToolKit.
  *
  *     DNTK - Digital Narration ToolKit is free software: you can redistribute it and/or modify
@@ -35,7 +93,7 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.jackson.JacksonFeature;
 
-import org.objectspace.dntk.rest.resource.HelloWorldResource;
+import org.objectspace.dntk.rest.resource.HelloResource;
 
 /**
  * @author juergen.enge
@@ -43,25 +101,29 @@ import org.objectspace.dntk.rest.resource.HelloWorldResource;
  */
 public class Main {
 
-	private static Server configureServer() {
+	private static Server configureJetty() {
+		Server server = new Server(8080);		
+		return server;
+	}
+
+	private static void configureJersey( Server server) {
 		ResourceConfig resourceConfig = new ResourceConfig();		
-		resourceConfig.packages(HelloWorldResource.class.getPackage().getName());
+		resourceConfig.packages(HelloResource.class.getPackage().getName());
 		resourceConfig.register(JacksonFeature.class);
 		ServletContainer servletContainer = new ServletContainer(resourceConfig);
 		ServletHolder sh = new ServletHolder(servletContainer);                
-		Server server = new Server(8080);		
 		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
         context.addServlet(sh, "/rest/*");
 		server.setHandler(context);
-		return server;
 	}
 	
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-        Server server = configureServer();
+        Server server = configureJetty();
+        configureJersey( server );
         try {
             server.start();
             server.join();
@@ -73,3 +135,4 @@ public class Main {
         }
     }
 } 
+

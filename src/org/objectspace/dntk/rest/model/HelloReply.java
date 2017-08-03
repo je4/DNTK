@@ -1,7 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Juergen Enge.
- *
- * This file is part of DNTK - Digital Narration ToolKit.
+ * This file is part of DNTK - The Digital Narration ToolKit.
  *
  *     DNTK - Digital Narration ToolKit is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -20,27 +18,24 @@
  * Contributors:
  *     info-age GmbH, Basel - initial implementation
  *******************************************************************************/
+/**
+ * @author juergen.enge
+ *
+ */
+package org.objectspace.dntk.rest.model;
 
-package org.objectspace.dntk.rest.resource;
+import javax.xml.bind.annotation.XmlRootElement;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-
-import org.objectspace.dntk.rest.model.Saying;
-
-
-@Path("/hello")
-public class HelloWorldResource {
+@XmlRootElement
+public class HelloReply {
 	
-	private static final String TEMPLATE = "Hello, %s!";
+	public String name;
 	
-	@GET
-	@Path("{name}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Saying sayHello(@PathParam("name") String name) {		
-		return new Saying(String.format(TEMPLATE, name));
-    }
+	public HelloReply() {
+		
+	}
+	
+	public HelloReply(String name) {
+		this.name = name;
+	}
 }
