@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html >
+<head>
+  <meta charset="UTF-8">
+  <title>DNTK - The Digital Narration Toolkit</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/FitText.js/1.2.0/jquery.fittext.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css" />
+
+
+      <style>
+      /* NOTE: The styles were added inline because Prefixfree needs access to your styles and they must be inlined if they are on local disk! */
+      body {
+  font-family: 'liquid_crystalregular', sans-serif;
+  user-select: none;
+  user-drag: none;
+  background-color: yellow;
+}
+
+.clock {
+  height: 200px;
+  width: 70%;
+  line-height: 100px;  
+  margin: 150px auto 0;	
+  padding: 0 50px;
+  background: #222;
+  color: #eee;
+  text-align: center;
+  border-radius: 15px;
+  box-shadow: 0 0 7px #222;
+  text-shadow: 0 0 3px #fff;
+}
+
+.name {
+  height: 100px;
+  width: 70%;
+  line-height: 100px;  
+  margin: 150px auto 0;	
+  padding: 0 50px;
+  background: #222;
+  color: #eee;
+  text-align: center;
+  border-radius: 15px;
+  box-shadow: 0 0 7px #222;
+  text-shadow: 0 0 3px #fff;
+}
+
+    </style>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>
+
+</head>
+
+<body>
+  <div id="name" class="name">unknown</div>
+  <div id="clock" class="clock">loading ...</div>
+  
+  <script>
+
+	function update() {
+	  $('#clock').html(moment().format('D. MMMM YYYY<br />H:mm:ss'));
+	}
+
+	$( window ).on( "load", function() { 
+		setInterval(update, 1000);	
+		$('#name').fitText(1.8);
+		$('#clock').fitText(1.8);
+	});
+
+	</script>
+</body>
+</html>
