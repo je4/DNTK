@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<jetty>
+		<port>8080</port>
+		<jersey>
+			<path>/rest/*</path>
+		</jersey>
+	</jetty>
+	
+	<browsers>
+		<timeout>15</timeout>
+	<!-- 
+		<browser type="safari">
+			<name>daSafari</name>
+			<url>http://localhost:4141</url>
+			<fullscreen>1</fullscreen>
+		</browser>
+		<browser type="firefox">
+			<name>daFirefox</name>
+			<url>http://localhost:4444</url>
+			<arguments>
+				<argument>-P Profile1</argument>
+				<argument>-profile /Users/juergen.enge/FirefoxProfile</argument>
+				<argument>-headless</argument>
+			</arguments>
+		</browser>
+	 -->
+		<browser type="chrome">
+			<name>daChrome</name>
+			<url>http://localhost:9515</url>
+			<!-- <binary>/path/to/chrome</binary>  -->
+
+			<!-- 
+			<extensions>
+				<extension>test</extension>
+			</extensions>
+			 -->
+
+			<arguments>
+				<argument>--kiosk</argument>
+				<argument>--user-data-dir=/Users/juergen.enge/ChromeProfile</argument>
+				<argument>--profile-directory=Profile1</argument>
+				<argument>--disable-infobars</argument>
+				<argument>--start-maximized</argument>
+				<argument>http://www.fhnw.ch</argument>
+			</arguments>
+			<prefs>
+				<xpref name="show_fullscreen_toolbar">false</xpref>
+			</prefs>
+		</browser>
+	</browsers>
+</configuration>
