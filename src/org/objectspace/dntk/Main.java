@@ -92,6 +92,7 @@ import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.servlet.ServletContainer;
@@ -109,19 +110,25 @@ import org.objectspace.dntk.rest.resource.HelloResource;
 public class Main {
 
 	private Server jetty = null;
-	private AbstractConfiguration cfg;
+	private ServletContextHandler context = null;
+	
+	/**
+	 * the configuration file
+	 */
+	public static AbstractConfiguration cfg = null;
 	
 	/**
 	 * 
 	 * @param cfg
 	 */
 	public Main( AbstractConfiguration cfg ) {
-		this.cfg = cfg;
+		Main.cfg = cfg;
 	}
 	
 	public void start() throws Exception {
 		initJetty();
 		createJerseyContext();
+		createStaticContentContext();
 		JettyThread jettythread = new JettyThread( jetty );
 		Thread runner = new Thread(jettythread);
 		runner.start();
@@ -158,6 +165,9 @@ public class Main {
 	private void initJetty() {
 		int port = cfg.getInt("jetty.port");
 		jetty = new Server(port);	
+		context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        context.setContextPath("/");
+        jetty.setHandler(context);
 	}
 
 	/**
@@ -173,11 +183,21 @@ public class Main {
 		resourceConfig.register(JacksonFeature.class);
 		ServletContainer servletContainer = new ServletContainer(resourceConfig);
 		ServletHolder sh = new ServletHolder(servletContainer);                
-		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-        context.setContextPath("/");
         
         context.addServlet(sh, jerseyPath);
-        jetty.setHandler(context);
+	}
+	
+	private void createStaticContentContext() throws Exception {
+		if( jetty == null ) throw new Exception( "jetty not initialized!" );
+
+		String path = cfg.getString( "jetty.staticcontent.path", "/static/*" );
+		String dir = cfg.getString( "jetty.staticcontent.dir" );
+        
+        ServletHolder staticContent = new ServletHolder( new DefaultServlet());
+        staticContent.setInitParameter("resourceBase",dir);
+        staticContent.setInitParameter("dirAllowed","true");
+        staticContent.setInitParameter("pathInfoOnly","true");
+        context.addServlet(staticContent, path);
 	}
 	
 	/**
