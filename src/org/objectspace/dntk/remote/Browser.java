@@ -209,7 +209,7 @@ public class Browser {
 		driver = new RemoteWebDriver(new java.net.URL( url ), capabilities);
 		status = CONNECTED;
 		
-		get( myurl + "/static/index.html" );	
+		get( myurl + "/content/index.html" );	
 		WebDriverWait wait = new WebDriverWait(driver, 2);
 		wait.until(ExpectedConditions.presenceOfElementLocated( By.id( "name" )));
 		try {

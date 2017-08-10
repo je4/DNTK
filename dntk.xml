@@ -4,19 +4,7 @@
 		<url>http://127.0.0.1:8080</url>
 		<ip>127.0.0.1</ip>
 		<port>8080</port>
-		<jersey>
-			<path>/rest/*</path>
-		</jersey>
-		<resourcebase>/Users/juergen.enge/daten/workspace/DNTK/static</resourcebase>
-		
-		<staticcontent>
-			<dir>/Users/juergen.enge/daten/workspace/DNTK/static</dir>
-			<path>/</path>
-		</staticcontent>
-		<jspcontent>
-			<dir>/Users/juergen.enge/daten/workspace/DNTK/jsp</dir>
-			<path>/jsp/*</path>
-		</jspcontent>
+		<webroot>/Users/juergen.enge/daten/workspace/DNTK/webroot</webroot>
 		<tempdir>/Users/juergen.enge/daten/workspace/DNTK/temp</tempdir>
 	</jetty>
 	
