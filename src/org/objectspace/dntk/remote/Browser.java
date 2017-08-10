@@ -12,17 +12,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.commons.text.StringEscapeUtils;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDateTime;
 import org.joda.time.format.ISODateTimeFormat;
+import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
-import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,6 +51,11 @@ public class Browser {
 	 * The WebDriver
 	 */
 	private WebDriver driver;
+	
+	/**
+	 * url of myself
+	 */
+	private String myurl = null;
 	
 	/**
 	 * url of remote browser
@@ -86,12 +93,30 @@ public class Browser {
 	 * @throws Exception 
 	 */
 	public Browser( AbstractConfiguration cfg, int id ) throws BrowserException, MalformedURLException {
+		this( cfg.getString( "browsers.browser("+id+").url" ), cfg, id );
+	}
+
+	/**
+	 * Constructor
+	 * 
+	 * Creates and initializes the WebDriver
+	 * 
+	 * @param url remote browser url
+	 * @param cfg Configuration file
+	 * @param id Current Browser ID
+	 * @throws BrowserException 
+	 * @throws MalformedURLException 
+	 * @throws Exception 
+	 */
+	public Browser( String url, AbstractConfiguration cfg, int id ) throws BrowserException, MalformedURLException {
+		
+		this.url = url;
 		
 		// creating the correct WebDriver Object
 		String browserCfg = "browsers.browser("+id+")";
 		name = cfg.getString( browserCfg+".name" );
-		url = cfg.getString(browserCfg + ".url" );
 		browserType = cfg.getString( browserCfg+"[@type]" );
+		myurl = cfg.getString( "jetty.url" );
 
 		switch( browserType ) {
 		case "chrome":
@@ -108,11 +133,8 @@ public class Browser {
 		}
 		
 		connect();
-		
-		
-		//driver.get( "http://www.fhnw.ch" );	
 	}
-	
+
 	public int getStatus() {
 		return status;
 	}
@@ -172,6 +194,8 @@ public class Browser {
 	 * @throws MalformedURLException
 	 */
 	public synchronized void connect() throws BrowserException, MalformedURLException {
+		lastaccess = LocalDateTime.now();
+
 		if( status != NONE ) {
 			try {
 				close();
@@ -185,16 +209,14 @@ public class Browser {
 		driver = new RemoteWebDriver(new java.net.URL( url ), capabilities);
 		status = CONNECTED;
 		
-		// safari fullscreen geht nicht...
-		switch( browserType ) {
-		case "safari":
-			Actions action = new Actions(driver);
-			action.keyDown(Keys.CONTROL)
-				.keyDown(Keys.COMMAND).perform();
-			action.sendKeys("F").perform();
-			action.keyUp(Keys.COMMAND)
-				.keyUp(Keys.CONTROL).perform();
-			break;
+		get( myurl + "/static/index.html" );	
+		WebDriverWait wait = new WebDriverWait(driver, 2);
+		wait.until(ExpectedConditions.presenceOfElementLocated( By.id( "name" )));
+		try {
+			((JavascriptExecutor)driver).executeAsyncScript("document.getElementById('name').innerHTML='"+StringEscapeUtils.escapeHtml4(name)+"';");
+		}
+		
+		catch( Exception e ) {
 		}
 	}
 	

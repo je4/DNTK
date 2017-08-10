@@ -77,6 +77,7 @@ public class BrowserPool implements Iterable<Browser> {
 		
 		int numBrowsers = bs.length;
 		for( int i = 0; i < numBrowsers; i++ ) {
+			if( !cfg.containsKey("browsers.browser("+i+").url")) continue;
 			Browser b;
 			try {
 				b = new Browser( cfg, i );

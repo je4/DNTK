@@ -1,10 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 	<jetty>
+		<url>http://127.0.0.1:8080</url>
+		<ip>127.0.0.1</ip>
 		<port>8080</port>
 		<jersey>
 			<path>/rest/*</path>
 		</jersey>
+		<resourcebase>/Users/juergen.enge/daten/workspace/DNTK/static</resourcebase>
+		
+		<staticcontent>
+			<dir>/Users/juergen.enge/daten/workspace/DNTK/static</dir>
+			<path>/</path>
+		</staticcontent>
+		<jspcontent>
+			<dir>/Users/juergen.enge/daten/workspace/DNTK/jsp</dir>
+			<path>/jsp/*</path>
+		</jspcontent>
+		<tempdir>/Users/juergen.enge/daten/workspace/DNTK/temp</tempdir>
 	</jetty>
 	
 	<browsers>
@@ -42,7 +55,20 @@
 				<argument>--profile-directory=Profile1</argument>
 				<argument>--disable-infobars</argument>
 				<argument>--start-maximized</argument>
-				<argument>http://www.fhnw.ch</argument>
+			</arguments>
+			<prefs>
+				<xpref name="show_fullscreen_toolbar">false</xpref>
+			</prefs>
+		</browser>
+		<browser type="chrome">
+			<name>anotherChrome</name>
+			<secret>ddcc8b8ecb11f73e84393f3e07d9b0ad</secret>
+			<arguments>
+				<argument>--kiosk</argument>
+				<argument>--user-data-dir=/Users/juergen.enge/ChromeProfile</argument>
+				<argument>--profile-directory=Profile1</argument>
+				<argument>--disable-infobars</argument>
+				<argument>--start-maximized</argument>
 			</arguments>
 			<prefs>
 				<xpref name="show_fullscreen_toolbar">false</xpref>
