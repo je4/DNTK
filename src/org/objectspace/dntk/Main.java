@@ -85,11 +85,8 @@
 package org.objectspace.dntk;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -97,16 +94,13 @@ import org.apache.commons.configuration2.AbstractConfiguration;
 import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
-import org.apache.tomcat.util.scan.StandardJarScanner;
-import org.eclipse.jetty.apache.jsp.JettyJasperInitializer;
 import org.eclipse.jetty.jmx.MBeanContainer;
-import org.eclipse.jetty.jsp.JettyJspServlet;
+import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.component.AbstractLifeCycle;
 import org.eclipse.jetty.webapp.Configuration;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.glassfish.jersey.servlet.ServletContainer;
@@ -191,12 +185,11 @@ public class Main {
 		
 		jetty = new Server();
         
-        // Define ServerConnector
+        // Basic jetty initialization
         ServerConnector connector = new ServerConnector(jetty);
         connector.setPort(port);
         jetty.addConnector(connector);
         
-		// Add annotation scanning (for WebAppContexts)
         Configuration.ClassList classlist = Configuration.ClassList
                 .setServerDefault( jetty );
         classlist.addBefore(
@@ -208,54 +201,27 @@ public class Main {
                 ManagementFactory.getPlatformMBeanServer());
         jetty.addBean(mbContainer);
         
+		// Initialize WebAppContext
         WebAppContext webAppContext = new WebAppContext();
         webAppContext.setContextPath("/content/");
-        
         webAppContext.setResourceBase(webroot);
-        
-                
         webAppContext.setAttribute("javax.servlet.context.tempdir",tempDir);
-        jetty.setHandler(webAppContext);
 
        
-        // Create Servlet context
+        // Initialize Jersey
         ServletContextHandler servletContext = new ServletContextHandler(ServletContextHandler.SESSIONS);
         servletContext.setContextPath("/rest/");
-		createJerseyContext(servletContext);
-        jetty.setHandler(servletContext);
-
-		//createJSPContext();
-		//createStaticContentContext();
-        
-	}
-
-	/**
-	 * @param servletContext 
-	 * 
-	 */
-	private void createJerseyContext(ServletContextHandler servletContext) throws Exception {
-		if( jetty == null ) throw new Exception( "jetty not initialized!" );
-
-		ResourceConfig resourceConfig = new ResourceConfig();		
+        ResourceConfig resourceConfig = new ResourceConfig();		
 		resourceConfig.packages(HelloResource.class.getPackage().getName());
 		resourceConfig.register(JacksonFeature.class);
 		ServletContainer servletContainer = new ServletContainer(resourceConfig);
 		ServletHolder sh = new ServletHolder(servletContainer);                
-        
-		servletContext.addServlet(sh, "/rest/*" );
-	}
-	
-	private void createStaticContentContext(ServletContextHandler servletContext) throws Exception {
-		if( jetty == null ) throw new Exception( "jetty not initialized!" );
+		servletContext.addServlet(sh, "/*" );
 
-		String path = cfg.getString( "jetty.staticcontent.path", "/" );
-		String dir = cfg.getString( "jetty.staticcontent.dir" );
-        
-        ServletHolder staticContent = new ServletHolder( "default", DefaultServlet.class);
-        staticContent.setInitParameter("resourceBase",dir);
-        staticContent.setInitParameter("dirAllowed","true");
-        //staticContent.setInitParameter("pathInfoOnly","true");
-        servletContext.addServlet(staticContent, path);
+		// Add HanderCollection
+		ContextHandlerCollection contexts = new ContextHandlerCollection();
+	    contexts.setHandlers(new Handler[] { webAppContext, servletContext });
+	    jetty.setHandler(contexts);
 	}
 	
 	/**

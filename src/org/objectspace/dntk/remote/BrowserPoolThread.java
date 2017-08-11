@@ -32,7 +32,7 @@ public class BrowserPoolThread implements Runnable {
 				if( s.getSeconds() > timeout ) {
 					if( b.getStatus() == Browser.CONNECTED) {
 						try {
-							b.getDate();
+							b.getRemoteDate();
 						} catch (BrowserException e) {
 							Logger.getLogger(BrowserPool.class.getName()).log(Level.WARNING, null, e);
 						}

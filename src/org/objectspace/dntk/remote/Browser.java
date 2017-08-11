@@ -61,6 +61,8 @@ public class Browser {
 	 * url of remote browser
 	 */
 	private String url = null;
+	private String host;
+	private int port;
 	
 	/**
 	 * capabilities for restarting the driver
@@ -93,7 +95,7 @@ public class Browser {
 	 * @throws Exception 
 	 */
 	public Browser( AbstractConfiguration cfg, int id ) throws BrowserException, MalformedURLException {
-		this( cfg.getString( "browsers.browser("+id+").url" ), cfg, id );
+		this( cfg.getString( "browsers.browser("+id+").host" ), cfg.getInt( "browsers.browser("+id+").port" ),  cfg, id );
 	}
 
 	/**
@@ -108,9 +110,11 @@ public class Browser {
 	 * @throws MalformedURLException 
 	 * @throws Exception 
 	 */
-	public Browser( String url, AbstractConfiguration cfg, int id ) throws BrowserException, MalformedURLException {
+	public Browser( String host, int port, AbstractConfiguration cfg, int id ) throws BrowserException, MalformedURLException {
 		
-		this.url = url;
+		this.host = host;
+		this.port = port;
+		this.url = "http://"+this.host+":"+this.port;
 		
 		// creating the correct WebDriver Object
 		String browserCfg = "browsers.browser("+id+")";
@@ -149,7 +153,7 @@ public class Browser {
 	 * @return
 	 * @throws BrowserException
 	 */
-	public Map<String, String> getInfo()  throws BrowserException {
+	public Map<String, String> getRemoteInfo()  throws BrowserException {
 		if( driver == null ) throw new BrowserException( "driver not initialized" );
 
 		JavascriptExecutor js = (JavascriptExecutor)driver;
@@ -170,7 +174,7 @@ public class Browser {
 	}
 
 	
-	public DateTime getDate() throws BrowserException {
+	public DateTime getRemoteDate() throws BrowserException {
 		if( driver == null ) throw new BrowserException( "driver not initialized" );
 
 		JavascriptExecutor js = (JavascriptExecutor)driver;
@@ -185,6 +189,37 @@ public class Browser {
 			Logger.getLogger(BrowserPool.class.getName()).log(Level.WARNING, null, e);
 			return null;
 		}
+	}
+	
+	public String getRemoteStatus() throws BrowserException {
+		if( driver == null ) throw new BrowserException( "driver not initialized" );
+
+		JavascriptExecutor js = (JavascriptExecutor)driver;
+		try {
+			String status = (String) js.executeScript("if( typeof getStatus == \"function\" ) return getStatus(); else return null;");
+			lastaccess = LocalDateTime.now();
+			return status;
+		}
+		catch( Exception e ) {
+			status = ERROR;
+			Logger.getLogger(BrowserPool.class.getName()).log(Level.WARNING, null, e);
+			return null;
+		}
+	}
+		
+	public void setRemoteStatus( String json ) throws BrowserException {
+		if( driver == null ) throw new BrowserException( "driver not initialized" );
+
+		JavascriptExecutor js = (JavascriptExecutor)driver;
+		try {
+			js.executeScript("if( typeof setStatus == \"function\" ) return setStatus('"+json+"'); else return null;");
+			lastaccess = LocalDateTime.now();
+		}
+		catch( Exception e ) {
+			status = ERROR;
+			Logger.getLogger(BrowserPool.class.getName()).log(Level.WARNING, null, e);
+		}
+			
 	}
 	
 	/**
@@ -317,6 +352,15 @@ public class Browser {
 	 */
 	public String getName() {
 		return name;
+	}
+	
+	/**
+	 * return host/ip of brwoser instance
+	 * 
+	 * @return the host/ip
+	 */
+	public String getHost() {
+		return host;
 	}
 	
 	/**

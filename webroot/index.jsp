@@ -4,17 +4,13 @@
 </head>
 <body>
  <%
-    double num = Math.random();
-    if (num > 0.95) {
+	String remoteIP = request.getRemoteAddr();
+	
+
+	String name = org.objectspace.dntk.remote.BrowserPool.getName( remoteIP );
+ 
   %>
-      <h2>You'll have a luck day!</h2><p>(<%= num %>)</p>
-  <%
-    } else {
-  %>
-      <h2>Well, life goes on ... </h2><p>(<%= num %>)</p>
-  <%
-    }
-  %>
+  <h3><%= remoteIP  %>: <%= name  %></h3>
   <a href="<%= request.getRequestURI() %>"><h3>Try Again</h3></a>
 </body>
 </html>

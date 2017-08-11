@@ -77,13 +77,13 @@ public class BrowserPool implements Iterable<Browser> {
 		
 		int numBrowsers = bs.length;
 		for( int i = 0; i < numBrowsers; i++ ) {
-			if( !cfg.containsKey("browsers.browser("+i+").url")) continue;
+			if( !cfg.containsKey("browsers.browser("+i+").host")) continue;
 			Browser b;
 			try {
 				b = new Browser( cfg, i );
 				pool.addBrowser(b);
-				b.getDate();
-				b.getInfo();
+				b.getRemoteDate();
+				b.getRemoteInfo();
 			} catch ( Exception e) {
 				Logger.getLogger(BrowserPool.class.getName()).log(Level.WARNING, null, e);
 			}
@@ -91,6 +91,25 @@ public class BrowserPool implements Iterable<Browser> {
 
 	}
 	
+	public static String getName( String host ) {
+		for( Browser b : BrowserPool.getInstance()) {
+			if( b.getHost().equals(host) ) return b.getName();
+		}
+		return null;
+	}
+	
+	public static Browser findName( String name ) {
+		for( Browser b : BrowserPool.getInstance()) {
+			if( b.getName().equals(name) ) return b;
+		}
+		return null;
+	}
+	public static Browser findHost( String host ) {
+		for( Browser b : BrowserPool.getInstance()) {
+			if( b.getHost().equals(host) ) return b;
+		}
+		return null;
+	}
 	
 	/**
 	 * add new Browser to pool
@@ -112,6 +131,7 @@ public class BrowserPool implements Iterable<Browser> {
 				Logger.getLogger(BrowserPool.class.getName()).log(Level.WARNING, null, e);
 			}
 		}
+
 		browsers = new HashMap<String, Browser>();
 	}
 }
