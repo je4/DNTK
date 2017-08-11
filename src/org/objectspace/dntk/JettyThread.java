@@ -1,7 +1,7 @@
 /*******************************************************************************
- * Copyright (c) 2017 Juergen Enge.
+ * (c) Copyright 2017 info-age GmbH, Basel
  *
- * This file is part of DNTK - Digital Narration ToolKit.
+ * This file is part of DNTK - The Digital Narration ToolKit.
  *
  *     DNTK - Digital Narration ToolKit is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
