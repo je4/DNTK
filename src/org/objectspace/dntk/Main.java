@@ -34,6 +34,8 @@ import java.lang.management.ManagementFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.websocket.server.ServerContainer;
+
 import org.apache.commons.configuration2.AbstractConfiguration;
 import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
@@ -47,12 +49,18 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.Configuration;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
+import org.eclipse.jetty.websocket.server.WebSocketHandler;
+import org.eclipse.jetty.websocket.server.WebSocketServerConnection;
+import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.objectspace.dntk.remote.BrowserPool;
 import org.objectspace.dntk.remote.BrowserPoolThread;
 import org.objectspace.dntk.rest.resource.HelloResource;
+import org.objectspace.dntk.websocket.SyncMessage;
+import org.objectspace.dntk.websocket.SyncServer;
 
 /**
  * @author juergen.enge
@@ -147,14 +155,17 @@ public class Main {
         
 		// Initialize WebAppContext
         WebAppContext webAppContext = new WebAppContext();
-        webAppContext.setContextPath("/content/");
+        webAppContext.setContextPath("/content");
         webAppContext.setResourceBase(webroot);
         webAppContext.setAttribute("javax.servlet.context.tempdir",tempDir);
 
+        // Initialize Websocket
+        ServletContextHandler websocketContext = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        websocketContext.setContextPath("/socket");
        
         // Initialize Jersey
         ServletContextHandler servletContext = new ServletContextHandler(ServletContextHandler.SESSIONS);
-        servletContext.setContextPath("/rest/");
+        servletContext.setContextPath("/rest");
         ResourceConfig resourceConfig = new ResourceConfig();		
 		resourceConfig.packages(HelloResource.class.getPackage().getName());
 		resourceConfig.register(JacksonFeature.class);
@@ -164,9 +175,13 @@ public class Main {
 
 		// Add HanderCollection
 		ContextHandlerCollection contexts = new ContextHandlerCollection();
-	    contexts.setHandlers(new Handler[] { webAppContext, servletContext });
+	    contexts.setHandlers(new Handler[] { webAppContext, servletContext, websocketContext });
 	    jetty.setHandler(contexts);
-	}
+
+	
+        ServerContainer wscontainer = WebSocketServerContainerInitializer.configureContext(websocketContext);
+        wscontainer.addEndpoint(SyncServer.class);
+}
 	
 	/**
 	 * @param args
