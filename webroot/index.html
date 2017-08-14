@@ -9,44 +9,86 @@
 	<script src="js/moment-2.18.1.min.js"></script>
 	<script src="js/jquery.fittext-1.2.0.min.js"></script>
 
- 
+	<link href="https://fonts.googleapis.com/css?family=IM+Fell+English" rel="stylesheet"> 
 
       <style>
-      /* NOTE: The styles were added inline because Prefixfree needs access to your styles and they must be inlined if they are on local disk! */
-      body {
-  font-family: 'liquid_crystalregular', sans-serif;
-  user-select: none;
-  user-drag: none;
-  background-color: yellow;
+body, html {
+  height: 100%;
+  }
+  
+body {
+  background-image: url(/content/img/background.png); 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  font-family: 'IM Fell English', serif;
 }
 
-.clock {
-  height: 200px;
-  width: 70%;
-  line-height: 100px;  
-  margin: 150px auto 0;	
-  padding: 0 50px;
-  background: #222;
-  color: #eee;
-  text-align: center;
-  border-radius: 15px;
-  box-shadow: 0 0 7px #222;
-  text-shadow: 0 0 3px #fff;
+.box {
+  color: white;
+  border-radius: 5px;
+  
+  padding: 20px;
+  font-size: 150%;
+  vertical-align: middle;
+}      
+
+.header {
+	grid-area: header;
+	font-size: 48pt;
+	   text-shadow: 0 0 5px white;
+   color: transparent;
 }
 
 .name {
-  height: 100px;
-  width: 70%;
-  line-height: 100px;  
-  margin: 150px auto 0;	
-  padding: 0 50px;
-  background: #222;
-  color: #eee;
-  text-align: center;
-  border-radius: 15px;
-  box-shadow: 0 0 7px #222;
-  text-shadow: 0 0 3px #fff;
+	grid-area: name;
+	font-size: 36pt;
 }
+
+.time {
+	grid-area: time;
+	font-size: 72pt;
+	text-align: center;
+	font-family: Courier;
+}
+#time {
+	position: relative;
+	top: 50%;
+	transform: translateY(-50%); 
+}
+
+	.footer {
+		grid-area: footer;
+		text-align: right;
+			   text-shadow: 0 0 3px white;
+   color: transparent;
+	}
+
+
+      
+      /* NOTE: The styles were added inline because Prefixfree needs access to your styles and they must be inlined if they are on local disk! */
+      body {
+}
+
+@media (min-width: 0) {
+
+	.wrapper {
+	  display: grid;
+	  width: 100%;
+	  height: 100%;
+	  grid-template-columns: 50px auto 50px;
+	  grid-template-rows: 200px 100px auto 50px;
+	  grid-template-areas: 
+	  	"header header header"
+	  	"....... name ......."
+	  	"....... time ......."
+	  	"footer footer footer";
+	  grid-gap: 10px;
+	  color: #444;
+	}
+}
+
 
     </style>
 
@@ -54,19 +96,22 @@
 </head>
 
 <body>
-  <div id="name" class="name">unknown</div>
-  <div id="clock" class="clock">loading ...</div>
-  
+<div class="wrapper">
+  <div class="box header">DNTK - The Digital Narration ToolKit</div>
+  <div class="box name"><span id="name">name</span></div>
+  <div class="box time">
+  	<div id="time">time</div>
+  </div>
+  <div class="box footer"><div id="copyright">(c) Copyright 2017 info-age GmbH, Basel</div></div>
+</div>
   <script>
 
 	function update() {
-	  $('#clock').html(moment().format('D. MMMM YYYY<br />H:mm:ss'));
+	  $('.time').html(moment().format('H:mm:ss.SS'));
 	}
 
 	$( window ).on( "load", function() { 
-		setInterval(update, 1000);	
-		$('#name').fitText(1.8);
-		$('#clock').fitText(1.8);
+		setInterval(update, 10);	
 	});
 
 	</script>
