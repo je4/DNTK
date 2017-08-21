@@ -1,0 +1,52 @@
+/*
+File by Jürgen Enge (info-age GmbH, Basel) available under CC-BY-SA-4.0
+Dieses Werk ist lizenziert unter einer Creative Commons Namensnennung - Weitergabe unter gleichen Bedingungen 4.0 International Lizenz.
+http://creativecommons.org/licenses/by-sa/4.0/
+*/
+
+html, body {
+	width: 100%;
+	height: 100%;
+	padding: 0px;
+	margin: 0px;
+}
+
+body {
+	background-image: url(../img/background.png);
+	color: white;
+	background-size: cover;
+}
+
+.wrapper {
+	width: 100%;
+	height: 100%;
+	display: grid;
+	grid-template-columns: 1fr 500px;
+	grid-template-rows: 80px 1fr 100px;
+	grid-template-areas: 
+		"header header"
+		"screens slides"
+		"commands slides";	
+}
+
+.area {
+	border: 2px solid red;
+}
+
+.header {
+	grid-area: header;
+	font-family: 'IM Fell English', serif;
+	font-size: 48pt;
+	text-shadow: 0 0 5px white;
+   	color: transparent;	
+   	text-align: center;
+}
+.screens {
+	grid-area: screens;
+}
+.slides {
+	grid-area: slides;
+}
+.commands {
+	grid-area: commands;
+}
