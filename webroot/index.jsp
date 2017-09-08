@@ -10,7 +10,7 @@
 	String name = org.objectspace.dntk.remote.BrowserPool.getName( remoteIP );
  
   %>
-  <h3><%= remoteIP  %>: <%= name  %></h3>
+  <h3>xxx<%= remoteIP  %>: <%= name  %></h3>
   <a href="<%= request.getRequestURI() %>"><h3>Try Again</h3></a>
 </body>
 </html>

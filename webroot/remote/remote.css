@@ -1,0 +1,103 @@
+.wrapper {
+	width: 100%;
+	height: 100%;
+	display: grid;
+	grid-template-columns: 1fr 500px;
+	grid-template-rows: 80px 1fr 100px;
+	grid-template-areas: 
+		"header header"
+		"screens slides"
+		"commands slides";	
+}
+
+.area {
+	border: 2px solid #565748;
+}
+
+.header {
+	grid-area: header;
+	font-family: 'IM Fell English', serif;
+	font-size: 48pt;
+	text-shadow: 0 0 5px white;
+   	color: transparent;	
+   	text-align: center;
+}
+.screens {
+	grid-area: screens;
+	display: flex;
+}
+.slides {
+	grid-area: slides;
+}
+.commands {
+	grid-area: commands;
+	container: flex;
+}
+
+.dntk-number {
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+	padding: 2px;
+	font-size: 18px;
+}
+
+.dntk-screenentry {
+	position: relative;
+	flex-direction: row;
+	flex-wrap: wrap;
+	background-color: #BFBFBF;
+	width: 150px;
+	height: 150px;
+	overflow: hidden;
+	margin: 5px;
+	padding: 2px;
+	font-size: 24px;
+	color: #191D13;
+	vertial-align: middle;
+}
+
+.dntk-listentry {
+	position: relative;
+	width: 100%;
+	background-color: #22271A;
+	height: 60px;
+	border-top: 1px solid #565748;
+	border-bottom: 1px solid #565748;
+	margin: 0px;
+	padding: 0px;
+	overflow: hidden;
+}
+.dntk-listentry.mouseover {
+	background-color: transparent;
+}
+
+.dntk-listentry > .dntk-title {
+	width: 100%;
+	padding: 0px;
+	height: 100%;
+	vertical-align: middle;
+	padding: 2px;
+	font-size: 28pt;
+}
+
+.dntk-functionentry {
+	position: relative;
+	align-items: stretch;
+	height: 100%;
+	background-color: #22271A;
+	border-left: 1px solid #565748;
+	border-right: 1px solid #565748;
+	margin: 0px;
+	padding: 0px;
+	overflow: hidden;
+	float: left;
+}
+
+.dntk-functionentry > img {
+	height: 100%;
+}
+
+.dntk-functionentry.mouseover {
+	background-color: transparent;
+}

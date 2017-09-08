@@ -29,19 +29,25 @@ package org.objectspace.dntk.remote;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.configuration2.AbstractConfiguration;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDateTime;
 import org.joda.time.format.ISODateTimeFormat;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
@@ -87,6 +93,8 @@ public class Browser {
 	private String url = null;
 	private String host;
 	private int port;
+	private String webroot = null;
+	private String screenshotlocation = null;
 	
 	/**
 	 * capabilities for restarting the driver
@@ -139,12 +147,19 @@ public class Browser {
 		this.host = host;
 		this.port = port;
 		this.url = "http://"+this.host+":"+this.port;
+		this.webroot = cfg.getString( "jetty.webroot" );
+		this.screenshotlocation = cfg.getString( "jetty.screenshotlocation" );
 		
 		// creating the correct WebDriver Object
 		String browserCfg = "browsers.browser("+id+")";
 		name = cfg.getString( browserCfg+".name" );
 		browserType = cfg.getString( browserCfg+"[@type]" );
 		myurl = cfg.getString( "jetty.url" );
+
+		int multiple = cfg.getInt( browserCfg+"[@multiple]" );
+		if( multiple == 1 ) {
+			name += " - "+ this.host;
+		}
 
 		switch( browserType ) {
 		case "chrome":
@@ -231,6 +246,23 @@ public class Browser {
 		}
 	}
 		
+	public String getScreenshot() throws BrowserException {
+		if( driver == null ) throw new BrowserException( "driver not initialized" );
+
+		try {
+			File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
+
+			String fileName = new SimpleDateFormat("yyyy-MM-dd HH:mm'.png'").format(new Date());
+			FileUtils.copyFile(scrFile, new File(webroot+screenshotlocation+"/"+fileName));
+			return screenshotlocation+"/"+fileName;
+		}
+		catch( Exception e ) {
+			status = ERROR;
+			Logger.getLogger(BrowserPool.class.getName()).log(Level.WARNING, null, e);
+			return null;
+		}
+	}
+		
 	public void setRemoteStatus( String json ) throws BrowserException {
 		if( driver == null ) throw new BrowserException( "driver not initialized" );
 
@@ -262,20 +294,30 @@ public class Browser {
 			catch( Exception e ) {
 				Logger.getLogger(BrowserPool.class.getName()).log(Level.WARNING, null, e);
 			}
+			status = DISCONNECTED;
 		}
 		if( capabilities == null ) throw new BrowserException( "Capabilities not initialized" );
 		
-		driver = new RemoteWebDriver(new java.net.URL( url ), capabilities);
-		status = CONNECTED;
-		
-		get( myurl + "/content/index.html" );	
-		WebDriverWait wait = new WebDriverWait(driver, 2);
-		wait.until(ExpectedConditions.presenceOfElementLocated( By.id( "name" )));
 		try {
+		
+			driver = new RemoteWebDriver(new java.net.URL( url ), capabilities);
+			driver.manage().timeouts().setScriptTimeout(10, TimeUnit.SECONDS );
+			status = CONNECTED;
+		}
+		
+		catch( Exception e ) {
+			status = ERROR;
+		}
+		try {
+			
+			get( myurl + "/content/index.html" );	
+			WebDriverWait wait = new WebDriverWait(driver, 2);
+			wait.until(ExpectedConditions.presenceOfElementLocated( By.id( "name" )));
 			((JavascriptExecutor)driver).executeAsyncScript("document.getElementById('name').innerHTML='"+StringEscapeUtils.escapeHtml4(name)+"';");
 		}
 		
 		catch( Exception e ) {
+			Logger.getLogger(BrowserPool.class.getName()).log(Level.WARNING, null, e);
 		}
 	}
 	
@@ -417,3 +459,4 @@ public class Browser {
 		}
 	}
 }
+

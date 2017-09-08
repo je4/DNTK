@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 	<jetty>
-	 
+		<url>http://192.168.26.123:8080</url>
+		<ip>192.168.26.123</ip>
+	<!-- 
+		<url>http://127.0.0.1:8080</url>
+		<ip>127.0.0.1</ip>
+	-->
+	<!-- 
 		<url>http://192.168.100.167:8080</url>
 		<ip>192.168.100.167</ip>
+	-->	
 	<!--
 		<url>http://10.224.2.25:8080</url>
 		<ip>10.224.2.25</ip>
@@ -11,6 +18,8 @@
 		<port>8080</port>
 		<webroot>/Users/juergen.enge/daten/workspace/DNTK/webroot</webroot>
 		<tempdir>/Users/juergen.enge/daten/workspace/DNTK/temp</tempdir>
+		<screenshotlocation>/remote/shots</screenshotlocation>
+		
 	</jetty>
 	
 	<browsers>
@@ -31,7 +40,7 @@
 			</arguments>
 		</browser>
 	 -->
-		<browser type="chrome">
+		<xbrowser type="chrome" multiple="0">
 			<name>daChrome</name>
 			<host>127.0.0.1</host>
 			<port>9515</port>
@@ -54,13 +63,13 @@
 			<prefs>
 				<xpref name="show_fullscreen_toolbar">false</xpref>
 			</prefs>
-		</browser>
-		<browser type="chrome">
-			<name>anotherChrome</name>
+		</xbrowser>
+		<browser type="chrome" multiple="1">
+			<name>WEB</name>
 			<secret>ddcc8b8ecb11f73e84393f3e07d9b0ad</secret>
 			<arguments>
 				<argument>--kiosk</argument>
-				<argument>--user-data-dir=C:/ChromeProfile</argument>
+				<argument>--user-data-dir=/Users/web/ChromeProfile</argument>
 				<argument>--profile-directory=Profile1</argument>
 				<argument>--disable-infobars</argument>
 				<argument>--start-maximized</argument>

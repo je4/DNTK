@@ -47,6 +47,7 @@ import org.objectspace.dntk.remote.BrowserException;
 import org.objectspace.dntk.remote.BrowserPool;
 import org.objectspace.dntk.rest.model.BrowserAddReply;
 import org.objectspace.dntk.rest.model.BrowserReply;
+import org.objectspace.dntk.rest.model.BrowserScreenshotReply;
 import org.objectspace.dntk.rest.model.BrowsersReply;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -62,6 +63,21 @@ public class BrowsersResource {
 		Browser b = pool.getBrowser(name);
 		try {
 			return new BrowserReply( b.getRemoteInfo());
+		} catch (BrowserException e) {
+			Logger.getLogger(BrowserPool.class.getName()).log(Level.WARNING, null, e);
+			return null;
+		}		
+		
+    }
+
+	@GET
+	@Path("{name}/screenshot")
+    @Produces(MediaType.APPLICATION_JSON)
+    public BrowserScreenshotReply getScreenshot(@PathParam("name") String name) {
+		BrowserPool pool = BrowserPool.getInstance();
+		Browser b = pool.getBrowser(name);
+		try {
+			return new BrowserScreenshotReply( b.getScreenshot());
 		} catch (BrowserException e) {
 			Logger.getLogger(BrowserPool.class.getName()).log(Level.WARNING, null, e);
 			return null;
@@ -88,6 +104,8 @@ public class BrowsersResource {
 			int port = (int)data.get("port");
 			String secret = (String) data.get( "secret" );
 			String[] bs = Main.cfg.getStringArray("browsers.browser.name");
+			//String localaddr = request.getLocalAddr();
+			
 			
 			for( int i = 0; i < bs.length; i++ ) {
 				String cfgSecret = Main.cfg.getString( "browsers.browser("+i+").secret", "7e15618d1bf16df8bf0ecf2914ed1964a387ba0bx");
