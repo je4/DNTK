@@ -1,4 +1,9 @@
 <html>
+<!-- 
+File by Jürgen Enge (info-age GmbH, Basel) available under CC-BY-SA-4.0
+Dieses Werk ist lizenziert unter einer Creative Commons Namensnennung - Weitergabe unter gleichen Bedingungen 4.0 International Lizenz.
+http://creativecommons.org/licenses/by-sa/4.0/
+-->
 <%@ page import="org.objectspace.dntk.remote.*" %>
 <%
     String videourl = request.getParameter( "video" );
@@ -76,7 +81,7 @@
 		connection.send( JSON.stringify( { 
 			type: 'timestamp',
 			now: (new Date()).getTime(), 
-			pos: video.currentTime 
+			pos: video.currentTime*1000 
 			} ));
 		setTimeout( sendSocketStatus, 1000 );
 	}	
@@ -85,10 +90,12 @@
 		if( data.type != 'timestamp' || inSync ) return;
 		var now = (new Date()).getTime();
 		var tdiff = now - data.now;
-		var vdiff = (video.currentTime - data.pos)*1000 - tdiff;
+		var vdiff = (video.currentTime*1000 - data.pos) - tdiff;
+		// liegt das aktuelle video mehr als 1sec zurück?
 		if( vdiff <  -1000 ) {
 			video.currentTime -= vdiff/1000;
 		}
+		// liegt das aktuelle video zwischen 1/10 und 1sec voraus?
 		else if( vdiff > 100 && vdiff <= 1000 ) {
 			inSync = true;
 			video.pause();
@@ -99,9 +106,8 @@
 		}
 	}
 	
-	video = document.getElementById( "vid" );
-	video.addEventListener('loadedmetadata', function() {
-		metadataloaded = true;
+	function connectWebsocket() {
+		
 		connection = new WebSocket('ws://<%= request.getLocalAddr() %>:<%= request.getLocalPort() %>/socket/sync/<%= socketgroup %>');
 		connection.onopen= function () {
 			connection.send( JSON.stringify( {status:"open"}));
@@ -110,6 +116,17 @@
 			  console.log('Server: ' + e.data);
 			  syncVideo( JSON.parse( e.data ));
 		};
+		
+		connection.onclose = function(){
+	        // Try to reconnect in 5 seconds
+	        setTimeout(function(){connectWebsocket()}, 5000);
+	    };
+	}
+	
+	video = document.getElementById( "vid" );
+	video.addEventListener('loadedmetadata', function() {
+		metadataloaded = true;
+		connectWebsocket();
 		setTimeout( sendSocketStatus, 1000 );
 	}, false);
 	</script>
