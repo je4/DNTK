@@ -67,7 +67,7 @@ public class SyncServer {
     		e.getValue().getAsyncRemote().sendText(message);
     	}
     	
-//    	LOG.log(Level.INFO, "Echoing back text message [{}] / "+message);
+    	//LOG.log(Level.INFO, "Echoing back text message [{}] / "+message);
         // Using shortcut approach to sending messages.
         // You could use a void method and use remote.sendText()
     }

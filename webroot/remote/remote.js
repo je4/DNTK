@@ -24,23 +24,31 @@
    	        });
         },
 
+        select: function( sel ) {
+	    	if( sel && !this.selected ) {
+	    		var max = 0;
+	    		$('.dntk-listentry').each( function( i, e ) {
+	    			var w = $(e);
+	    			var n = w.listentry( "getNum" );
+	    			if( n > max ) max = n;
+	    		});
+	    		this.selected = true;
+	    		this.num = max+1;
+	    	}
+	    	else if( !sel && this.selected ) {
+	    		this.selected = false;
+	    		this.num = 0;
+	    	}
+	    	this.element.find( '.dntk-number' ).html( this.num );
+        },
+        
         _click: function(e) {
-        	if( this.selected ) {
-        		this.element.find( ".dntk-number" ).html( '0' );
-        		this.selected = false;
-        		this.num = 0;
-        	}
-        	else {
-        		var max = 0;
-        		$('.dntk-listentry').each( function( i, e ) {
-        			var w = $(e);
-        			var n = w.listentry( "getNum" );
-        			if( n > max ) max = n;
-        		});
-        		this.selected = true;
-        		this.num = max+1;
-        		this.element.find( '.dntk-number' ).html( this.num );
-        	}
+	    	if( this.selected ) {
+	    		this.select(false);
+	    	}
+	    	else {
+	    		this.select(true);
+	    	}
         },
         
         _hover: function (e) {
@@ -134,24 +142,32 @@
    	            click:"_click",
    	        });
         },
-
+        
+        select: function( sel ) {
+	    	if( sel && !this.selected ) {
+	    		var max = 0;
+	    		$('.dntk-screenentry').each( function( i, e ) {
+	    			var w = $(e);
+	    			var n = w.screenentry( "getNum" );
+	    			if( n > max ) max = n;
+	    		});
+	    		this.selected = true;
+	    		this.num = max+1;
+	    	}
+	    	else if( !sel && this.selected ) {
+	    		this.selected = false;
+	    		this.num = 0;
+	    	}
+	    	this.element.find( '.dntk-number' ).html( this.num );
+        },
+        
         _click: function(e) {
-        	if( this.selected ) {
-        		this.element.find( ".dntk-number" ).html( '0' );
-        		this.selected = false;
-        		this.num = 0;
-        	}
-        	else {
-        		var max = 0;
-        		$('.dntk-screenentry').each( function( i, e ) {
-        			var w = $(e);
-        			var n = w.screenentry( "getNum" );
-        			if( n > max ) max = n;
-        		});
-        		this.selected = true;
-        		this.num = max+1;
-        		this.element.find( '.dntk-number' ).html( this.num );
-        	}
+	    	if( this.selected ) {
+	    		this.select(false);
+	    	}
+	    	else {
+	    		this.select(true);
+	    	}
         },
         
         _hover: function (e) {
@@ -179,9 +195,8 @@
  
 }( jQuery ));
 
-function linear() {
+function getListEntries() {
 	var list = [];
-	var screen = [];
 	var _tmp = [];
 	$('.dntk-listentry').each( function( i, e ) {
 		var w = $(e);
@@ -198,7 +213,12 @@ function linear() {
     {
         list.push(_tmp[ keys[i] ]);
     }
+    
+    return list;
+}
 
+function getScreenEntries() {
+	var screen = [];
 	_tmp = [];
 	$('.dntk-screenentry').each( function( i, e ) {
 		var w = $(e);
@@ -215,4 +235,78 @@ function linear() {
     {
         screen.push(_tmp[ keys[i] ]);
     }
+    return screen;
 }
+
+function clearSelections() {
+	$('.dntk-screenentry').each( function( i, e ) {
+		var w = $(e);
+		w.screenentry( "select", false );
+	});	
+	$('.dntk-listentry').each( function( i, e ) {
+		var w = $(e);
+		w.listentry( "select", false );
+	});	
+}
+
+function linear() {
+	var list = getListEntries();
+    var screen = getScreenEntries();
+    
+    for( var key in screen ) {
+    	if(!( key in list )) break;
+    	var b = screen[key];
+    	var rest = b.data.resturl; // +"/browsers/"+b.data.name+"/get";
+    	var api = new RestClient( rest );
+    	api.res({ rest:
+    			{ browsers: 
+    				'get' 
+    			}
+    		});
+    	api.rest.browsers(encodeURI(b.data.name)).get.post({url: list[key].data.url.replace( "%%BASEURL%%", b.data.baseurl ) });
+    }
+    clearSelections();
+}
+
+
+function one2many() {
+	var list = getListEntries();
+    var screen = getScreenEntries();
+
+    if( !(0 in list )) return;
+    
+    for( var key in screen ) {
+    	var b = screen[key];
+    	var rest = b.data.resturl; 
+    	var api = new RestClient( rest );
+    	api.res({ rest:
+    			{ browsers: 
+    				'get' 
+    			}
+    		});
+    	api.rest.browsers(encodeURI(b.data.name)).get.post({url: list[0].data.url.replace( "%%BASEURL%%", b.data.baseurl ) });
+    }
+    clearSelections();
+}
+
+function info() {
+	var list = getListEntries();
+    var screen = getScreenEntries();
+
+    if( !(0 in screen )) return;
+    
+	var b = screen[0];
+	var rest = b.data.resturl;
+	var api = new RestClient( rest );
+	api.res({ rest:
+			{ browsers: 
+				'screenshot' 
+			}
+		});
+	$( "#screeninfo" ).html( '<img src="/content/img/rings.svg" />' );
+	$( "#screeninfo" ).toggleClass( 'active ');
+	api.rest.browsers(encodeURI(b.data.name)).screenshot.get().then( function ( e ) {
+		$( "#screeninfo" ).html( '<img src="/content'+e.path+'" style="max-width: 800px; max-height: 600PX" />' );
+	});
+    clearSelections();
+};

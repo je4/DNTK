@@ -2,6 +2,7 @@
 <%@ page import="org.objectspace.dntk.remote.*" %>
 <%
     String videourl = request.getParameter( "video" );
+	String socketgroup = request.getParameter( "group" );
  	String h = request.getParameter("loop" );
 	String loop = (h == null ? "" : "loop"); 
 	h = request.getParameter("muted" );
@@ -41,11 +42,14 @@
 </video>
 	<script>
 	var metadataloaded = false;
+	var connection = null;
+	var video = null;
+	var inSync = false;
 //	var status = "{\"href\":\"http://localhost:8080/content/video.jsp?muted&autoplay&video=https%3A%2F%2Fba14ns21403.fhnw.ch%2Fvideo%2Fopen%2Fasdf93484.mp4\",\"time\":154.640167}";
 	var status = "<%= status == null ? "null" : status.replaceAll("\"","\\\"") %>";
 	function getStatus( ) {
 		var d = new Date();		
-		var time = document.getElementById( "vid" ).currentTime;
+		var time = video.currentTime;
 		var status = {
 				"href": window.location.href,
 				"time": time,
@@ -65,11 +69,48 @@
 		var d = new Date();
 		var t = d.getTime();
 		var diff = t - status['systemtime'];
-		document.getElementById( "vid" ).currentTime = status['time'] + diff/1000;
+		video.currentTime = status['time'] + diff/1000;
 	}
 	
-	document.getElementById('vid').addEventListener('loadedmetadata', function() {
+	function sendSocketStatus() {
+		connection.send( JSON.stringify( { 
+			type: 'timestamp',
+			now: (new Date()).getTime(), 
+			pos: video.currentTime 
+			} ));
+		setTimeout( sendSocketStatus, 1000 );
+	}	
+
+	function syncVideo( data ) {
+		if( data.type != 'timestamp' || inSync ) return;
+		var now = (new Date()).getTime();
+		var tdiff = now - data.now;
+		var vdiff = (video.currentTime - data.pos)*1000 - tdiff;
+		if( vdiff <  -1000 ) {
+			video.currentTime -= vdiff/1000;
+		}
+		else if( vdiff > 100 && vdiff <= 1000 ) {
+			inSync = true;
+			video.pause();
+			setTimeout( function () {
+				video.play();
+				inSync = false;
+			}, vdiff );
+		}
+	}
+	
+	video = document.getElementById( "vid" );
+	video.addEventListener('loadedmetadata', function() {
 		metadataloaded = true;
+		connection = new WebSocket('ws://<%= request.getLocalAddr() %>:<%= request.getLocalPort() %>/socket/sync/<%= socketgroup %>');
+		connection.onopen= function () {
+			connection.send( JSON.stringify( {status:"open"}));
+		}
+		connection.onmessage = function (e) {
+			  console.log('Server: ' + e.data);
+			  syncVideo( JSON.parse( e.data ));
+		};
+		setTimeout( sendSocketStatus, 1000 );
 	}, false);
 	</script>
 </body>

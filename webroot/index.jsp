@@ -1,16 +1,33 @@
+<%@ page import="org.objectspace.dntk.remote.*" %>
+<%
+	String socketgroup = request.getParameter( "group" ); 
+%>
 <html>
 <head>
 <title>Testing JSP</title>
 </head>
 <body>
- <%
-	String remoteIP = request.getRemoteAddr();
-	
 
-	String name = org.objectspace.dntk.remote.BrowserPool.getName( remoteIP );
- 
-  %>
-  <h3>xxx<%= remoteIP  %>: <%= name  %></h3>
-  <a href="<%= request.getRequestURI() %>"><h3>Try Again</h3></a>
+<script src="js/jquery-3.2.1.min.js"></script>
+<script>
+
+function sendSocketStatus() {
+	connection.send( JSON.stringify( { 
+		now: (new Date()).getTime(), 
+		} ));	
+	setTimeout( sendSocketStatus, 1000 );
+}
+
+$( document ).ready(function() {
+	connection = new WebSocket('ws://<%= request.getLocalAddr() %>:<%= request.getLocalPort() %>/socket/sync/<%= socketgroup %>');
+	connection.onopen= function () {
+		connection.send( JSON.stringify( {status:"open"}));
+	}
+	connection.onmessage = function (e) {
+		  console.log('Server: ' + e.data);
+	};
+	setTimeout( sendSocketStatus, 1000 );
+});
+</script>
 </body>
 </html>

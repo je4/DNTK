@@ -64,7 +64,7 @@ public class BrowserPoolThread implements Runnable {
 					else if( b.getStatus() == Browser.ERROR) {
 						try {
 							b.connect();
-						} catch (MalformedURLException | BrowserException e) {
+						} catch (Exception e) {
 							Logger.getLogger(BrowserPool.class.getName()).log(Level.WARNING, null, e);
 						}
 					}

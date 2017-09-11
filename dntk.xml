@@ -40,10 +40,10 @@
 			</arguments>
 		</browser>
 	 -->
-		<xbrowser type="chrome" multiple="0">
-			<name>daChrome</name>
-			<host>127.0.0.1</host>
-			<port>9515</port>
+		<browser type="chrome" multiple="1">
+			<name>local</name>
+			<secret>ddcc8b8ecb11f73e84393f3e07d9b2ad</secret>
+			<baseurl>http://127.0.0.1:8080</baseurl>
 			<!-- <binary>/path/to/chrome</binary>  -->
 
 			<!-- 
@@ -57,15 +57,16 @@
 				<argument>--user-data-dir=/Users/juergen.enge/ChromeProfile</argument>
 				<argument>--profile-directory=Profile1</argument>
 				<argument>--disable-infobars</argument>
-				<argument>--start-maximized</argument>
+				<xargument>--start-maximized</xargument>
 				<argument>--incognito</argument>
 			</arguments>
 			<prefs>
 				<xpref name="show_fullscreen_toolbar">false</xpref>
 			</prefs>
-		</xbrowser>
+		</browser>
 		<browser type="chrome" multiple="1">
 			<name>WEB</name>
+			<baseurl>http://192.168.26.123:8080</baseurl>
 			<secret>ddcc8b8ecb11f73e84393f3e07d9b0ad</secret>
 			<arguments>
 				<argument>--kiosk</argument>
