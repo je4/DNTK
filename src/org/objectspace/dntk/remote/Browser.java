@@ -35,6 +35,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -81,17 +82,14 @@ public class Browser {
 	 * The WebDriver
 	 */
 	private WebDriver driver;
-	
-	/**
-	 * url of myself
-	 */
-	private String myurl = null;
+
 	
 	/**
 	 * url of remote browser
 	 */
 	private String url = null;
 	private String host;
+	private String baseurl;
 	private int port;
 	private String webroot = null;
 	private String screenshotlocation = null;
@@ -115,6 +113,8 @@ public class Browser {
 	
 	private ObjectMapper mapper = new ObjectMapper();
 	
+	final ReentrantLock lock = new ReentrantLock();
+	
 	/**
 	 * Constructor
 	 * 
@@ -122,11 +122,9 @@ public class Browser {
 	 * 
 	 * @param cfg Configuration file
 	 * @param id Current Browser ID
-	 * @throws BrowserException 
-	 * @throws MalformedURLException 
 	 * @throws Exception 
 	 */
-	public Browser( AbstractConfiguration cfg, int id ) throws BrowserException, MalformedURLException {
+	public Browser( AbstractConfiguration cfg, int id ) throws Exception {
 		this( cfg.getString( "browsers.browser("+id+").host" ), cfg.getInt( "browsers.browser("+id+").port" ),  cfg, id );
 	}
 
@@ -138,23 +136,21 @@ public class Browser {
 	 * @param url remote browser url
 	 * @param cfg Configuration file
 	 * @param id Current Browser ID
-	 * @throws BrowserException 
-	 * @throws MalformedURLException 
 	 * @throws Exception 
 	 */
-	public Browser( String host, int port, AbstractConfiguration cfg, int id ) throws BrowserException, MalformedURLException {
+	public Browser( String host, int port, AbstractConfiguration cfg, int id ) throws Exception {
 		
 		this.host = host;
 		this.port = port;
 		this.url = "http://"+this.host+":"+this.port;
 		this.webroot = cfg.getString( "jetty.webroot" );
 		this.screenshotlocation = cfg.getString( "jetty.screenshotlocation" );
+		this.baseurl = cfg.getString( "browsers.browser("+id+").baseurl" );
 		
 		// creating the correct WebDriver Object
 		String browserCfg = "browsers.browser("+id+")";
 		name = cfg.getString( browserCfg+".name" );
 		browserType = cfg.getString( browserCfg+"[@type]" );
-		myurl = cfg.getString( "jetty.url" );
 
 		int multiple = cfg.getInt( browserCfg+"[@multiple]" );
 		if( multiple == 1 ) {
@@ -181,7 +177,15 @@ public class Browser {
 	public int getStatus() {
 		return status;
 	}
-	
+
+	public String getURL() {
+		return url;
+	}
+
+	public String getBaseURL() {
+		return baseurl;
+	}
+
 	public LocalDateTime getLastAccess() {
 		return lastaccess;
 	}
@@ -195,129 +199,175 @@ public class Browser {
 	public Map<String, String> getRemoteInfo()  throws BrowserException {
 		if( driver == null ) throw new BrowserException( "driver not initialized" );
 
-		JavascriptExecutor js = (JavascriptExecutor)driver;
 		try {
-			String javascript = "return JSON.stringify({ time:(new Date()).toISOString(), appCodeName:navigator.appCodeName, appName:navigator.appName, appVersion:navigator.appVersion });";
+			if (lock.tryLock(2, TimeUnit.SECONDS)) {
 			
-			String json = (String) js.executeScript(javascript);
-			
-			Map<String, String> map = new HashMap<String, String>();
-			map = mapper.readValue(json, new TypeReference<Map<String, String>>(){});
-			lastaccess = LocalDateTime.now();
-			return map;
+				JavascriptExecutor js = (JavascriptExecutor)driver;
+				String javascript = "return JSON.stringify({ time:(new Date()).toISOString(), appCodeName:navigator.appCodeName, appName:navigator.appName, appVersion:navigator.appVersion });";
+				
+				String json = (String) js.executeScript(javascript);
+				
+				Map<String, String> map = new HashMap<String, String>();
+				map = mapper.readValue(json, new TypeReference<Map<String, String>>(){});
+				lastaccess = LocalDateTime.now();
+				return map;
+			}
 		}
-		catch( Exception ex ) {
+		catch( Exception e ) {
 			status = ERROR;
-			return null;
+			Logger.getLogger(BrowserPool.class.getName()).log(Level.WARNING, null, e);
 		}
+		finally {
+			if (lock.isHeldByCurrentThread()) lock.unlock();
+		}
+		return null;
 	}
 
 	
 	public DateTime getRemoteDate() throws BrowserException {
 		if( driver == null ) throw new BrowserException( "driver not initialized" );
-
-		JavascriptExecutor js = (JavascriptExecutor)driver;
+		
 		try {
-			String utc = (String) js.executeScript("return new Date().toJSON();");
-			DateTime dateTime = ISODateTimeFormat.dateTimeParser().parseDateTime(utc);
-			lastaccess = LocalDateTime.now();
-			return dateTime;
+			if (lock.tryLock(2, TimeUnit.SECONDS)) {
+				JavascriptExecutor js = (JavascriptExecutor)driver;
+				String utc = (String) js.executeScript("return new Date().toJSON();");
+				DateTime dateTime = ISODateTimeFormat.dateTimeParser().parseDateTime(utc);
+				lastaccess = LocalDateTime.now();
+				return dateTime;
+			}
 		}
 		catch( Exception e ) {
 			status = ERROR;
 			Logger.getLogger(BrowserPool.class.getName()).log(Level.WARNING, null, e);
-			return null;
 		}
+		finally {
+			if (lock.isHeldByCurrentThread()) lock.unlock();
+		}
+		return null;
 	}
 	
 	public String getRemoteStatus() throws BrowserException {
 		if( driver == null ) throw new BrowserException( "driver not initialized" );
 
-		JavascriptExecutor js = (JavascriptExecutor)driver;
 		try {
-			String status = (String) js.executeScript("if( typeof getStatus == \"function\" ) return getStatus(); else return null;");
-			lastaccess = LocalDateTime.now();
-			return status;
+			if (lock.tryLock(2, TimeUnit.SECONDS)) {
+		
+				JavascriptExecutor js = (JavascriptExecutor)driver;
+				String status = (String) js.executeScript("if( typeof getStatus == \"function\" ) return getStatus(); else return null;");
+				lastaccess = LocalDateTime.now();
+				return status;
+			}
 		}
 		catch( Exception e ) {
 			status = ERROR;
 			Logger.getLogger(BrowserPool.class.getName()).log(Level.WARNING, null, e);
-			return null;
 		}
+		finally {
+			if (lock.isHeldByCurrentThread()) lock.unlock();
+		}
+		return null;
 	}
 		
 	public String getScreenshot() throws BrowserException {
 		if( driver == null ) throw new BrowserException( "driver not initialized" );
 
 		try {
-			File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
-
-			String fileName = new SimpleDateFormat("yyyy-MM-dd HH:mm'.png'").format(new Date());
-			FileUtils.copyFile(scrFile, new File(webroot+screenshotlocation+"/"+fileName));
-			return screenshotlocation+"/"+fileName;
+			if (lock.tryLock(2, TimeUnit.SECONDS)) {
+				File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
+	
+				String fileName = new SimpleDateFormat("yyyy-MM-dd HHmmss'.png'").format(new Date());
+				FileUtils.copyFile(scrFile, new File(webroot+screenshotlocation+"/"+fileName));
+				return screenshotlocation+"/"+fileName;
+			}
 		}
 		catch( Exception e ) {
 			status = ERROR;
 			Logger.getLogger(BrowserPool.class.getName()).log(Level.WARNING, null, e);
-			return null;
+		}
+		finally {
+			if (lock.isHeldByCurrentThread()) lock.unlock();
+		}
+		return null;
+	}
+	
+	/**
+	 * opens a url in browser
+	 * @param url
+	 * @throws BrowserException 
+	 */
+	public void get( String url ) throws BrowserException {
+		if( driver == null ) throw new BrowserException( "driver not initialized" );
+		if( status != CONNECTED ) return;
+		try {
+			if (lock.tryLock(2, TimeUnit.SECONDS)) {
+				driver.get( url );
+				lastaccess = LocalDateTime.now();
+			}
+		}
+		catch( Exception e ) {
+			status = ERROR;
+			Logger.getLogger(BrowserPool.class.getName()).log(Level.WARNING, null, e);
+		}
+		finally {
+			if (lock.isHeldByCurrentThread()) lock.unlock();
 		}
 	}
-		
+	
 	public void setRemoteStatus( String json ) throws BrowserException {
 		if( driver == null ) throw new BrowserException( "driver not initialized" );
 
-		JavascriptExecutor js = (JavascriptExecutor)driver;
 		try {
-			js.executeScript("if( typeof setStatus == \"function\" ) return setStatus('"+json+"'); else return null;");
-			lastaccess = LocalDateTime.now();
+			if (lock.tryLock(2, TimeUnit.SECONDS)) {
+				JavascriptExecutor js = (JavascriptExecutor)driver;
+				js.executeScript("if( typeof setStatus == \"function\" ) return setStatus('"+json+"'); else return null;");
+				lastaccess = LocalDateTime.now();
+			}
 		}
 		catch( Exception e ) {
 			status = ERROR;
 			Logger.getLogger(BrowserPool.class.getName()).log(Level.WARNING, null, e);
 		}
-			
+		finally {
+			if (lock.isHeldByCurrentThread()) lock.unlock();
+		}
 	}
 	
 	/**
 	 * (re-)connects to the browser
-	 * 
-	 * @throws BrowserException
-	 * @throws MalformedURLException
+	 * @throws Exception 
 	 */
-	public synchronized void connect() throws BrowserException, MalformedURLException {
+	public void connect() throws Exception {
 		lastaccess = LocalDateTime.now();
 
 		if( status != NONE ) {
 			try {
 				close();
+				status = DISCONNECTED;
 			}
 			catch( Exception e ) {
 				Logger.getLogger(BrowserPool.class.getName()).log(Level.WARNING, null, e);
 			}
-			status = DISCONNECTED;
 		}
 		if( capabilities == null ) throw new BrowserException( "Capabilities not initialized" );
 		
 		try {
-		
-			driver = new RemoteWebDriver(new java.net.URL( url ), capabilities);
-			driver.manage().timeouts().setScriptTimeout(10, TimeUnit.SECONDS );
-			status = CONNECTED;
+			if (lock.tryLock(1, TimeUnit.SECONDS)) {
+				driver = new RemoteWebDriver(new java.net.URL( url ), capabilities);
+				driver.manage().timeouts().setScriptTimeout(10, TimeUnit.SECONDS );
+				status = CONNECTED;
+
+				get( baseurl + "/content/index.html" );	
+				WebDriverWait wait = new WebDriverWait(driver, 4);
+				wait.until(ExpectedConditions.presenceOfElementLocated( By.id( "name" )));
+				((JavascriptExecutor)driver).executeScript("document.getElementById('name').innerHTML='"+StringEscapeUtils.escapeHtml4(name)+"'; return;");
+			}
 		}
-		
 		catch( Exception e ) {
 			status = ERROR;
-		}
-		try {
-			
-			get( myurl + "/content/index.html" );	
-			WebDriverWait wait = new WebDriverWait(driver, 2);
-			wait.until(ExpectedConditions.presenceOfElementLocated( By.id( "name" )));
-			((JavascriptExecutor)driver).executeAsyncScript("document.getElementById('name').innerHTML='"+StringEscapeUtils.escapeHtml4(name)+"';");
-		}
-		
-		catch( Exception e ) {
 			Logger.getLogger(BrowserPool.class.getName()).log(Level.WARNING, null, e);
+		}
+		finally {
+			if (lock.isHeldByCurrentThread()) lock.unlock();
 		}
 	}
 	
@@ -437,26 +487,21 @@ public class Browser {
 		if( status == NONE ) return;
 		
 		if( driver == null ) throw new BrowserException( "driver not initialized" );
-		driver.close();
-		driver = null;
-		status = NONE;
-	}
-	
-	/**
-	 * opens a url in browser
-	 * @param url
-	 * @throws BrowserException 
-	 */
-	public void get( String url ) throws BrowserException {
-		if( driver == null ) throw new BrowserException( "driver not initialized" );
-		if( status != CONNECTED ) return;
 		try {
-			driver.get( url );
-			lastaccess = LocalDateTime.now();
+			if (lock.tryLock(2, TimeUnit.SECONDS)) {
+				driver.close();
+				driver = null;
+				status = NONE;
+			}
 		}
-		catch( Exception e) {
+		catch( Exception e ) {
 			status = ERROR;
+			Logger.getLogger(BrowserPool.class.getName()).log(Level.WARNING, null, e);
+		}
+		finally {
+			if (lock.isHeldByCurrentThread()) lock.unlock();
 		}
 	}
+
 }
 
