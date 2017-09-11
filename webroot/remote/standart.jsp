@@ -19,7 +19,7 @@ http://creativecommons.org/licenses/by-sa/4.0/
 <div class="wrapper">
   <div class="area header">DNTK - The Digital Narration ToolKit</div>
   <div class="area slides">
-  	<div class="listentry" data-title="Slide 1" data-url="%%BASEURL%%/content/video.jsp?muted&autoplay&group=g1&video=https%3A%2F%2Fba14ns21403.fhnw.ch%2Fvideo%2Fopen%2Fasdf93484.mp4" data-status="{&quot;title&quot;: &quot;Testing&quot;, &quot;url&quot;: &quot;http://sdfsdf&quot; }"></div>
+  	<div class="listentry" data-title="Slide 1" data-url="%%BASEURL%%/content/video.jsp?muted&loop&autoplay&group=g1&video=https%3A%2F%2Fba14ns21403.fhnw.ch%2Fvideo%2Fopen%2Fasdf93484.mp4" data-status="{&quot;title&quot;: &quot;Testing&quot;, &quot;url&quot;: &quot;http://sdfsdf&quot; }"></div>
   	<div class="listentry" data-title="Slide 2" data-url="http://www.heise.de" data-status="{&quot;title&quot;: &quot;Testing&quot;, &quot;url&quot;: &quot;http://sdfsdf&quot; }"></div>
   	<div class="listentry" data-title="Slide 3" data-url="http://www.heise.de" data-status="{&quot;title&quot;: &quot;Testing&quot;, &quot;url&quot;: &quot;http://sdfsdf&quot; }"></div>
   	<div class="listentry" data-title="Slide 4" data-url="http://www.heise.de" data-status="{&quot;title&quot;: &quot;Testing&quot;, &quot;url&quot;: &quot;http://sdfsdf&quot; }"></div>
@@ -62,6 +62,7 @@ http://creativecommons.org/licenses/by-sa/4.0/
 <script src="https://unpkg.com/onsenui/js/onsenui.min.js"></script>
 <script src="../js/jquery-3.2.1.min.js"></script>
 <script src="../js/jquery-ui.min.js"></script>
+<!--  <script src="../js/jquery.ui.touch-punch.min.js"></script>  -->
 <script src="../js/rest-client.js"></script>
 <script src="remote.js"></script>
 <script>
@@ -70,8 +71,10 @@ http://creativecommons.org/licenses/by-sa/4.0/
 
 $( window ).on( "load", function() { 
 	$( '.listentry' ).listentry();
+	$( '.listentry' ).draggable();
 	$( '.functionentry' ).functionentry();
 	$( '.screenentry' ).screenentry();
+	$( '.screenentry' ).draggable();
 	$( '.infobox' ).click( function() {
 		$(this).toggleClass( "active" );
 	})

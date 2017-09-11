@@ -1,6 +1,6 @@
 <html>
 <!-- 
-File by Jürgen Enge (info-age GmbH, Basel) available under CC-BY-SA-4.0
+File by Juergen Enge (info-age GmbH, Basel) available under CC-BY-SA-4.0
 Dieses Werk ist lizenziert unter einer Creative Commons Namensnennung - Weitergabe unter gleichen Bedingungen 4.0 International Lizenz.
 http://creativecommons.org/licenses/by-sa/4.0/
 -->
@@ -50,6 +50,8 @@ http://creativecommons.org/licenses/by-sa/4.0/
 	var connection = null;
 	var video = null;
 	var inSync = false;
+	var loop = 0;
+	var lastTime = 0;
 //	var status = "{\"href\":\"http://localhost:8080/content/video.jsp?muted&autoplay&video=https%3A%2F%2Fba14ns21403.fhnw.ch%2Fvideo%2Fopen%2Fasdf93484.mp4\",\"time\":154.640167}";
 	var status = "<%= status == null ? "null" : status.replaceAll("\"","\\\"") %>";
 	function getStatus( ) {
@@ -59,6 +61,7 @@ http://creativecommons.org/licenses/by-sa/4.0/
 				"href": window.location.href,
 				"time": time,
 				"systemtime": d.getTime(),
+				"loop": loop,
 		};
 		return JSON.stringify(status);			
 	}
@@ -74,25 +77,36 @@ http://creativecommons.org/licenses/by-sa/4.0/
 		var d = new Date();
 		var t = d.getTime();
 		var diff = t - status['systemtime'];
+		loop = status['loop'];
 		video.currentTime = status['time'] + diff/1000;
 	}
 	
 	function sendSocketStatus() {
+		var cTime = video.currentTime*1000;
+		if( lastTime > cTime ) loop++;
+		lastTime = cTime;
 		connection.send( JSON.stringify( { 
 			type: 'timestamp',
 			now: (new Date()).getTime(), 
-			pos: video.currentTime*1000 
+			pos: cTime,
+			status: status,
+			loop: loop
 			} ));
 		setTimeout( sendSocketStatus, 1000 );
 	}	
 
 	function syncVideo( data ) {
 		if( data.type != 'timestamp' || inSync ) return;
+		if( data.status != 'playing' ) { return; }
 		var now = (new Date()).getTime();
 		var tdiff = now - data.now;
 		var vdiff = (video.currentTime*1000 - data.pos) - tdiff;
-		// liegt das aktuelle video mehr als 1sec zurück?
-		if( vdiff <  -1000 ) {
+		// liegt das aktuelle video mehr als 1sec zurï¿½ck?
+		if( data.loop > loop ) {
+			loop = data.loop;
+			video.currentTime = (data.pos + tdiff)/1000;
+		}
+		else if( vdiff <  -1000 ) {
 			video.currentTime -= vdiff/1000;
 		}
 		// liegt das aktuelle video zwischen 1/10 und 1sec voraus?
@@ -126,9 +140,29 @@ http://creativecommons.org/licenses/by-sa/4.0/
 	video = document.getElementById( "vid" );
 	video.addEventListener('loadedmetadata', function() {
 		metadataloaded = true;
+		status = "metadata"
 		connectWebsocket();
 		setTimeout( sendSocketStatus, 1000 );
 	}, false);
+	video.addEventListener('play', function() {
+		status = "play";
+	}, false);
+	video.addEventListener('playing', function() {
+		status = "playing";
+	}, false);
+	video.addEventListener('pause', function() {
+		status = "pause";
+	}, false);
+	video.addEventListener('ended', function() {
+		status = "ended";
+	}, false);
+	video.addEventListener('abort', function() {
+		status = "abort";
+	}, false);
+	video.addEventListener('error', function() {
+		status = "error";
+	}, false);
+
 	</script>
 </body>
 </html>
